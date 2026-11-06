@@ -1,0 +1,23 @@
+<svg class="sicon" viewBox="0 0 16 16" width="@Size" height="@Size" aria-hidden="true">
+    @switch (Status)
+    {
+        case AccessStatus.Autorizado:
+            <circle cx="8" cy="8" r="7" fill="var(--ok)" />
+            <path d="M4.8 8.2l2.1 2.1 4.3-4.4" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
+            break;
+        case AccessStatus.NaoAutorizado:
+            <circle cx="8" cy="8" r="7" fill="var(--bad)" />
+            <path d="M5.5 5.5l5 5M10.5 5.5l-5 5" stroke="#fff" stroke-width="1.8" stroke-linecap="round" />
+            break;
+        default:
+            <circle cx="8" cy="8" r="7" fill="var(--warn)" />
+            <path d="M6.3 6.2a1.8 1.8 0 1 1 2.4 1.7c-.5.2-.7.6-.7 1.1v.3" fill="none" stroke="#0b0b0b" stroke-width="1.5" stroke-linecap="round" />
+            <circle cx="8" cy="11.6" r=".9" fill="#0b0b0b" />
+            break;
+    }
+</svg>
+
+@code {
+    [Parameter] public AccessStatus Status { get; set; }
+    [Parameter] public int Size { get; set; } = 14;
+}

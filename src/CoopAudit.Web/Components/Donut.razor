@@ -1,0 +1,54 @@
+@* Rosca com a distribuição do volume por situação *@
+<div class="donut-wrap">
+    <svg viewBox="0 0 120 120" class="donut" role="img" aria-label="Distribuição do volume por situação">
+        <circle cx="60" cy="60" r="@R" fill="none" stroke="var(--track)" stroke-width="14" />
+        @{
+            double offset = 0;
+            var total = Counts.Total;
+        }
+        @if (total > 0)
+        {
+            foreach (var s in Order)
+            {
+                var v = Counts.Of(s);
+                if (v == 0) continue;
+                var len = C * v / total;
+                var gap = segments > 1 ? Math.Min(1.5, len / 2) : 0;
+                <circle cx="60" cy="60" r="@R" fill="none" class="arc @Fmt.StatusCss(s)" stroke-width="14"
+                        stroke-dasharray="@F(Math.Max(len - gap, 0.01)) @F(C)"
+                        stroke-dashoffset="@F(-offset)"
+                        transform="rotate(-90 60 60)">
+                    <title>@Fmt.StatusLabel(s): @Fmt.N(v) (@Fmt.Pct(v, total))</title>
+                </circle>
+                offset += len;
+            }
+        }
+        <text x="60" y="57" text-anchor="middle" class="donut-num">@CenterValue</text>
+        <text x="60" y="73" text-anchor="middle" class="donut-cap">@CenterLabel</text>
+    </svg>
+    <ul class="legend">
+        @foreach (var s in Order)
+        {
+            var v = Counts.Of(s);
+            <li>
+                <StatusIcon Status="s" />
+                <span class="lg-label">@Fmt.StatusLabel(s)</span>
+                <span class="lg-val">@Fmt.N(v)</span>
+                <span class="lg-pct">@Fmt.Pct(v, Counts.Total)</span>
+            </li>
+        }
+    </ul>
+</div>
+
+@code {
+    private static readonly AccessStatus[] Order = [AccessStatus.Autorizado, AccessStatus.NaoCadastrado, AccessStatus.NaoAutorizado];
+    private const double R = 48;
+    private static readonly double C = 2 * Math.PI * R;
+    private int segments => Order.Count(s => Counts.Of(s) > 0);
+
+    [Parameter, EditorRequired] public StatusCounts Counts { get; set; } = new(0, 0, 0);
+    [Parameter] public string CenterValue { get; set; } = "";
+    [Parameter] public string CenterLabel { get; set; } = "";
+
+    private static string F(double v) => v.ToString("0.###", System.Globalization.CultureInfo.InvariantCulture);
+}

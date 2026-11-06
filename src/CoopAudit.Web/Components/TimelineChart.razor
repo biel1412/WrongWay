@@ -1,0 +1,73 @@
+@* Colunas empilhadas por hora (arquivo diário) ou por dia (arquivo mensal) *@
+@if (Buckets.Count == 0)
+{
+    <div class="empty small">Sem datas válidas para montar a linha do tempo.</div>
+}
+else
+{
+    var max = Math.Max(1, Buckets.Max(b => b.Counts.Total));
+    var step = Buckets.Count > 16 ? (int)Math.Ceiling(Buckets.Count / 12.0) : 1;
+    var ticks = Ticks(max);
+    <div class="tl">
+        <div class="tl-axis">
+            @foreach (var t in ticks.AsEnumerable().Reverse())
+            {
+                <span style="bottom:@(P(100.0 * t / ticks[^1]))%">@Fmt.N(t)</span>
+            }
+        </div>
+        <div class="tl-plot">
+            @foreach (var t in ticks)
+            {
+                <div class="tl-grid" style="bottom:@(P(100.0 * t / ticks[^1]))%"></div>
+            }
+            <div class="tl-cols">
+                @for (var i = 0; i < Buckets.Count; i++)
+                {
+                    var b = Buckets[i];
+                    var c = b.Counts;
+                    <div class="tl-col" tabindex="0">
+                        <div class="tl-bar" style="height:@(P(100.0 * c.Total / ticks[^1]))%">
+                            @if (c.NaoAutorizado > 0) { <div class="seg bad" style="flex:@c.NaoAutorizado"></div> }
+                            @if (c.NaoCadastrado > 0) { <div class="seg warn" style="flex:@c.NaoCadastrado"></div> }
+                            @if (c.Autorizado > 0) { <div class="seg ok" style="flex:@c.Autorizado"></div> }
+                        </div>
+                        <div class="tl-tip">
+                            <strong>@b.Tooltip</strong>
+                            <div><StatusIcon Status="AccessStatus.Autorizado" Size="11" /> Autorizado <b>@Fmt.N(c.Autorizado)</b></div>
+                            <div><StatusIcon Status="AccessStatus.NaoCadastrado" Size="11" /> Não cadastrado <b>@Fmt.N(c.NaoCadastrado)</b></div>
+                            <div><StatusIcon Status="AccessStatus.NaoAutorizado" Size="11" /> Não autorizado <b>@Fmt.N(c.NaoAutorizado)</b></div>
+                            <div class="tl-tip-total">Total <b>@Fmt.N(c.Total)</b></div>
+                        </div>
+                        @if (c.NaoAutorizado > 0)
+                        {
+                            <div class="tl-flag" style="bottom:calc(@(P(100.0 * c.Total / ticks[^1]))% + 4px)"></div>
+                        }
+                        <div class="tl-label">@(i % step == 0 ? b.Label : "")</div>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    [Parameter, EditorRequired] public List<TimeBucket> Buckets { get; set; } = new();
+
+    private static string P(double v) => v.ToString("0.##", System.Globalization.CultureInfo.InvariantCulture);
+
+    /// <summary>Marcas "redondas" do eixo Y: 0, passo, 2×passo... até cobrir o máximo.</summary>
+    private static int[] Ticks(int max)
+    {
+        var raw = max / 4.0;
+        var mag = Math.Pow(10, Math.Floor(Math.Log10(Math.Max(raw, 1))));
+        var norm = raw / mag;
+        var step = (int)Math.Max(1, (norm <= 1 ? 1 : norm <= 2 ? 2 : norm <= 5 ? 5 : 10) * mag);
+        var list = new List<int>();
+        for (var v = 0; ; v += step)
+        {
+            list.Add(v);
+            if (v >= max) break;
+        }
+        return list.ToArray();
+    }
+}

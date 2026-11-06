@@ -1,0 +1,21 @@
+@if (Total > PageSize)
+{
+    var pages = (int)Math.Ceiling(Total / (double)PageSize);
+    <div class="pager">
+        <span class="muted">@Fmt.N(Page * PageSize + 1)–@Fmt.N(Math.Min(Total, (Page + 1) * PageSize)) de @Fmt.N(Total)</span>
+        <button class="btn ghost sm" disabled="@(Page == 0)" @onclick="() => Go(0)">«</button>
+        <button class="btn ghost sm" disabled="@(Page == 0)" @onclick="() => Go(Page - 1)">‹ Anterior</button>
+        <span class="pager-pos">@(Page + 1) / @pages</span>
+        <button class="btn ghost sm" disabled="@(Page >= pages - 1)" @onclick="() => Go(Page + 1)">Próxima ›</button>
+        <button class="btn ghost sm" disabled="@(Page >= pages - 1)" @onclick="() => Go(pages - 1)">»</button>
+    </div>
+}
+
+@code {
+    [Parameter] public int Total { get; set; }
+    [Parameter] public int PageSize { get; set; } = 20;
+    [Parameter] public int Page { get; set; }
+    [Parameter] public EventCallback<int> PageChanged { get; set; }
+
+    private Task Go(int p) => PageChanged.InvokeAsync(p);
+}

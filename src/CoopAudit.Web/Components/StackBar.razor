@@ -1,0 +1,29 @@
+@* Barra horizontal empilhada por situação do usuário *@
+<div class="stackbar" style="height:@(Height)px">
+    @if (Counts.Total == 0)
+    {
+        <div class="seg empty" style="width:100%"></div>
+    }
+    else
+    {
+        foreach (var s in Order)
+        {
+            var v = Counts.Of(s);
+            if (v == 0) continue;
+            var w = Max > 0 ? 100.0 * v / Max : 100.0 * v / Counts.Total;
+            <div class="seg @Fmt.StatusCss(s)" style="width:@(Css(w))%"
+                 data-tip="@Fmt.StatusLabel(s): @Fmt.N(v) (@Fmt.Pct(v, Counts.Total))"></div>
+        }
+    }
+</div>
+
+@code {
+    private static readonly AccessStatus[] Order = [AccessStatus.NaoAutorizado, AccessStatus.NaoCadastrado, AccessStatus.Autorizado];
+
+    [Parameter, EditorRequired] public StatusCounts Counts { get; set; } = new(0, 0, 0);
+    /// <summary>Se informado, a barra é proporcional a este máximo (para comparar linhas).</summary>
+    [Parameter] public int Max { get; set; }
+    [Parameter] public int Height { get; set; } = 10;
+
+    private static string Css(double v) => Math.Max(v, 0.6).ToString("0.###", System.Globalization.CultureInfo.InvariantCulture);
+}

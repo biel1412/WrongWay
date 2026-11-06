@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>CoopAudit · Monitor de acessos por cooperativa</title>
+    <!-- O deploy do GitHub Pages troca este href pelo nome do repositório (ex.: /coop-audit/) -->
+    <base href="/" />
+    <link rel="preload" id="webassembly" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="css/app.css" />
+    <link rel="icon" type="image/svg+xml" href="favicon.svg" />
+    <script type="importmap"></script>
+</head>
+
+<body>
+    <div id="app">
+        <div class="boot">
+            <div class="boot-logo">
+                <svg viewBox="0 0 24 24" width="30" height="30" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M12 3l7 3v5c0 4.5-3 8.3-7 10-4-1.7-7-5.5-7-10V6l7-3z" />
+                    <path d="M9 12l2 2 4-4" />
+                </svg>
+            </div>
+            <div class="boot-title">CoopAudit</div>
+            <div class="boot-bar"><span></span></div>
+            <div class="boot-text">Carregando aplicação…</div>
+        </div>
+    </div>
+
+    <div id="blazor-error-ui">
+        Ocorreu um erro inesperado.
+        <a href="." class="reload">Recarregar</a>
+        <span class="dismiss">✕</span>
+    </div>
+    <script src="js/app.js"></script>
+    <script src="_framework/blazor.webassembly#[.{fingerprint}].js"></script>
+</body>
+
+</html>

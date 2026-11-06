@@ -1,0 +1,6 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/CoopAudit.Core/CoopAudit.Core.csproj" />
+    <Project Path="src/CoopAudit.Web/CoopAudit.Web.csproj" />
+  </Folder>
+</Solution>

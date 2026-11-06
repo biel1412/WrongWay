@@ -1,0 +1,10 @@
+<span class="badge @Fmt.StatusCss(Status) @(Irregular && Status == AccessStatus.NaoCadastrado ? "flag" : "")">
+    <StatusIcon Status="Status" />
+    @Fmt.StatusLabel(Status)
+</span>
+
+@code {
+    [Parameter] public AccessStatus Status { get; set; }
+    /// <summary>Destaca "não cadastrado" quando o modo rigoroso está ligado.</summary>
+    [Parameter] public bool Irregular { get; set; }
+}
