@@ -50,6 +50,10 @@ jobs:
           REPO="${{ github.event.repository.name }}"
           if [[ "$REPO" == *.github.io ]]; then BASE="/"; else BASE="/$REPO/"; fi
           sed -i "s|<base href=\"/\" />|<base href=\"$BASE\" />|" out/wwwroot/index.html
+          # Evita que o navegador use CSS/JS antigos do cache depois de uma atualização
+          V="${GITHUB_SHA::8}"
+          sed -i -E "s#(href|src)=\"(css/[a-z]+\.css|js/app\.js)\"#\1=\"\2?v=$V\"#g" out/wwwroot/index.html
+          sed -i -E "s#(\.woff2)\"#\1?v=$V\"#g" out/wwwroot/css/fonts.css
           cp out/wwwroot/index.html out/wwwroot/404.html
           touch out/wwwroot/.nojekyll
 
