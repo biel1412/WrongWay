@@ -41,12 +41,12 @@
 </div>
 
 @code {
-    private static readonly AccessStatus[] Order = [AccessStatus.Autorizado, AccessStatus.NaoCadastrado, AccessStatus.NaoAutorizado];
+    private static readonly AccessStatus[] Order = [AccessStatus.Autorizado, AccessStatus.NaoAutorizado];
     private const double R = 48;
     private static readonly double C = 2 * Math.PI * R;
     private int segments => Order.Count(s => Counts.Of(s) > 0);
 
-    [Parameter, EditorRequired] public StatusCounts Counts { get; set; } = new(0, 0, 0);
+    [Parameter, EditorRequired] public StatusCounts Counts { get; set; } = new(0, 0);
     [Parameter] public string CenterValue { get; set; } = "";
     [Parameter] public string CenterLabel { get; set; } = "";
 

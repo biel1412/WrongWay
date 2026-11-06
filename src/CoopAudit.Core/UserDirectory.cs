@@ -6,8 +6,7 @@ namespace CoopAudit.Core;
 public enum AccessStatus
 {
     Autorizado,
-    NaoAutorizado,
-    NaoCadastrado
+    NaoAutorizado
 }
 
 /// <summary>Listas de acesso de uma cooperativa.</summary>
@@ -21,11 +20,15 @@ public sealed class CoopAccessList
 }
 
 /// <summary>
-/// Cadastro de usuários autorizados/não autorizados por cooperativa.
+/// Lista de usuários autorizados por cooperativa (modelo "lista branca").
+/// Quem não estiver na lista de autorizados da coop é NÃO AUTORIZADO nela.
 ///
-/// Formato principal (uma aba por lista):
-///   "3069_autorizados"      → usuários liberados para a coop 3069
-///   "3069_não_autorizados"  → usuários proibidos na coop 3069
+/// Formato principal (uma aba por coop):
+///   "3069_autorizados"  → únicos usuários liberados para a coop 3069
+///   "0300_autorizados"  → únicos usuários liberados para a coop 300 (aba vazia = ninguém liberado)
+///
+/// Abas "COOP_não_autorizados" ainda são aceitas, mas são redundantes: só servem para
+/// garantir que um nome também presente na lista de autorizados seja tratado como não autorizado.
 ///
 /// Formato alternativo (uma única aba com colunas):
 ///   COOPERATIVA | USUARIO | STATUS (Autorizado / Não autorizado)
@@ -48,10 +51,8 @@ public sealed partial class UserDirectory
 
     public AccessStatus StatusOf(string coop, string user)
     {
-        if (!Coops.TryGetValue(coop, out var list)) return AccessStatus.NaoCadastrado;
-        if (list.Unauthorized.Contains(user)) return AccessStatus.NaoAutorizado;
-        if (list.Authorized.Contains(user)) return AccessStatus.Autorizado;
-        return AccessStatus.NaoCadastrado;
+        if (!Coops.TryGetValue(coop, out var list)) return AccessStatus.NaoAutorizado;
+        return list.Authorized.Contains(user) ? AccessStatus.Autorizado : AccessStatus.NaoAutorizado;
     }
 
     public static UserDirectory Parse(XlsxWorkbook wb)
@@ -77,7 +78,7 @@ public sealed partial class UserDirectory
 
         if (recognized == 0)
             throw new InvalidDataException(
-                "Não encontrei listas de usuários. Nomeie as abas como \"3069_autorizados\" e \"3069_não_autorizados\" " +
+                "Não encontrei listas de usuários. Nomeie as abas como \"3069_autorizados\", \"0300_autorizados\"... " +
                 "ou use uma aba com as colunas COOPERATIVA, USUARIO e STATUS.");
 
         foreach (var c in dir.Coops.Values)
@@ -88,8 +89,8 @@ public sealed partial class UserDirectory
                 c.Authorized.Remove(u);
                 dir.Warnings.Add($"Coop {c.Label}: {u} aparece nas duas listas — considerado NÃO autorizado.");
             }
-            if (c.Authorized.Count == 0 && c.Unauthorized.Count == 0)
-                dir.Warnings.Add($"Coop {c.Label}: listas vazias — todos os usuários aparecerão como \"não cadastrados\".");
+            if (c.Authorized.Count == 0)
+                dir.Warnings.Add($"Coop {c.Label}: lista de autorizados vazia — todo usuário que atuar nela será considerado não autorizado.");
         }
 
         return dir;

@@ -23,15 +23,13 @@ public static class Fmt
     public static string StatusLabel(AccessStatus s) => s switch
     {
         AccessStatus.Autorizado => "Autorizado",
-        AccessStatus.NaoAutorizado => "Não autorizado",
-        _ => "Não cadastrado"
+        _ => "Não autorizado"
     };
 
     public static string StatusCss(AccessStatus s) => s switch
     {
         AccessStatus.Autorizado => "ok",
-        AccessStatus.NaoAutorizado => "bad",
-        _ => "warn"
+        _ => "bad"
     };
 
     public static string ModeLabel(CoopMatchMode m) => m switch

@@ -56,7 +56,7 @@ else
                 <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.2" /><path d="M3 19c.8-3.2 3.2-5 6-5s5.2 1.8 6 5" /><path d="M16 11l2 2 3.5-3.5" /></svg>
             </div>
             <div class="drop-title">Planilha de usuários</div>
-            <div class="drop-sub">Abas <code>COOP_autorizados</code> e <code>COOP_não_autorizados</code></div>
+            <div class="drop-sub">Uma aba <code>COOP_autorizados</code> por cooperativa</div>
             @if (usersFile == null)
             {
                 <div class="drop-cta">Arraste aqui ou <u>clique para escolher</u></div>
@@ -86,14 +86,6 @@ else
                     Usa as colunas <code>INSTITUICAOORIGEM</code> e/ou <code>INSTITUICADESTINO</code>. Pode ser alterado depois, no painel.
                 </div>
             </div>
-            <label class="toggle">
-                <input type="checkbox" @bind="strict" />
-                <span class="track"><span class="thumb"></span></span>
-                <span>
-                    <span class="field-label">Modo rigoroso</span>
-                    <span class="field-help">Usuários fora das duas listas também contam como irregulares.</span>
-                </span>
-            </label>
         </div>
         <div class="setup-actions">
             @if (error != null)
@@ -115,9 +107,9 @@ else
             <div class="howto-item">
                 <div class="howto-n">A</div>
                 <div>
-                    <strong>Uma aba por lista</strong>, com o código da cooperativa no nome:
+                    <strong>Uma aba por cooperativa</strong>, com o código no nome:
                     <div class="tabs-demo">
-                        <span>3069_autorizados</span><span>3069_não_autorizados</span><span>0300_autorizados</span>
+                        <span>3069_autorizados</span><span>0300_autorizados</span>
                     </div>
                     Na coluna A, um login por linha (ex.: <code>laisa.caetano</code>). Maiúsculas, acentos e zeros à esquerda são ignorados.
                 </div>
@@ -125,17 +117,18 @@ else
             <div class="howto-item">
                 <div class="howto-n">B</div>
                 <div>
-                    <strong>Ou uma aba única</strong> com as colunas <code>COOPERATIVA</code>, <code>USUARIO</code> e <code>STATUS</code>
-                    (<em>Autorizado</em> / <em>Não autorizado</em>).
+                    <strong>Só quem está na lista é autorizado.</strong>
+                    <span class="badge ok"><StatusIcon Status="AccessStatus.Autorizado" /> Autorizado</span> está na aba da coop;
+                    qualquer outro usuário que atuar nela é
+                    <span class="badge bad"><StatusIcon Status="AccessStatus.NaoAutorizado" /> Não autorizado</span>.
+                    Aba vazia = ninguém liberado naquela coop.
                 </div>
             </div>
             <div class="howto-item">
                 <div class="howto-n">C</div>
                 <div>
-                    <strong>Classificação:</strong>
-                    <span class="badge ok"><StatusIcon Status="AccessStatus.Autorizado" /> Autorizado</span> está na lista de liberados;
-                    <span class="badge bad"><StatusIcon Status="AccessStatus.NaoAutorizado" /> Não autorizado</span> está na lista de bloqueados;
-                    <span class="badge warn"><StatusIcon Status="AccessStatus.NaoCadastrado" /> Não cadastrado</span> não está em nenhuma.
+                    <strong>Ou uma aba única</strong> com as colunas <code>COOPERATIVA</code>, <code>USUARIO</code> e <code>STATUS</code>
+                    (<em>Autorizado</em>). Só as cooperativas presentes na planilha são auditadas.
                 </div>
             </div>
         </div>
@@ -158,7 +151,6 @@ else
     private List<IBrowserFile> activityFiles = new();
     private IBrowserFile? usersFile;
     private CoopMatchMode mode = CoopMatchMode.OrigemOuDestino;
-    private bool strict;
     private bool busy;
     private string progress = "";
     private string? error;
@@ -188,7 +180,7 @@ else
         await Task.Delay(30);
         try
         {
-            await Session.LoadAsync(activityFiles, usersFile!, new AuditOptions { Mode = mode, UnlistedIsIrregular = strict },
+            await Session.LoadAsync(activityFiles, usersFile!, new AuditOptions { Mode = mode },
                 async (text, _) =>
                 {
                     progress = text;

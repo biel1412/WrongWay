@@ -28,20 +28,14 @@ else
                     <div class="tl-col" tabindex="0">
                         <div class="tl-bar" style="height:@(P(100.0 * c.Total / ticks[^1]))%">
                             @if (c.NaoAutorizado > 0) { <div class="seg bad" style="flex:@c.NaoAutorizado"></div> }
-                            @if (c.NaoCadastrado > 0) { <div class="seg warn" style="flex:@c.NaoCadastrado"></div> }
                             @if (c.Autorizado > 0) { <div class="seg ok" style="flex:@c.Autorizado"></div> }
                         </div>
                         <div class="tl-tip">
                             <strong>@b.Tooltip</strong>
                             <div><StatusIcon Status="AccessStatus.Autorizado" Size="11" /> Autorizado <b>@Fmt.N(c.Autorizado)</b></div>
-                            <div><StatusIcon Status="AccessStatus.NaoCadastrado" Size="11" /> Não cadastrado <b>@Fmt.N(c.NaoCadastrado)</b></div>
                             <div><StatusIcon Status="AccessStatus.NaoAutorizado" Size="11" /> Não autorizado <b>@Fmt.N(c.NaoAutorizado)</b></div>
                             <div class="tl-tip-total">Total <b>@Fmt.N(c.Total)</b></div>
                         </div>
-                        @if (c.NaoAutorizado > 0)
-                        {
-                            <div class="tl-flag" style="bottom:calc(@(P(100.0 * c.Total / ticks[^1]))% + 4px)"></div>
-                        }
                         <div class="tl-label">@(i % step == 0 ? b.Label : "")</div>
                     </div>
                 }

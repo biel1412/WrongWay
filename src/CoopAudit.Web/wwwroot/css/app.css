@@ -1,6 +1,6 @@
 /* ==========================================================
    CoopAudit — tema
-   Situação: verde = autorizado · âmbar = não cadastrado · vermelho = não autorizado
+   Situação: verde = autorizado (está na lista) · vermelho = não autorizado (fora da lista)
    (sempre acompanhadas de ícone + texto, nunca só a cor)
    ========================================================== */
 :root {

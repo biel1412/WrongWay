@@ -26,13 +26,12 @@ A cada alteração enviada para a branch `main`, o site é atualizado sozinho.
 1. **Planilha de atividades**: o mesmo layout do compilado (`IDPROCESSO`, `NOMEPROCESSO`, …, `USUARIO`, `ATIVIDADE`,
    `PROCEDIMENTO`, `DATAHORAINICIOATIVIDADE`, `DATAHORAFIMATIVIDADE`, `JUSTIFICATIVA`).
    Pode ser de um dia ou do mês inteiro. Também dá para selecionar vários arquivos diários de uma vez: linhas repetidas são descartadas.
-2. **Planilha de usuários**: uma aba por lista, com o código da cooperativa no nome:
+2. **Planilha de usuários**: uma aba de autorizados por cooperativa, com o código no nome:
 
-   | Aba                     | Conteúdo (coluna A, um login por linha) |
-   |-------------------------|-----------------------------------------|
-   | `3069_autorizados`      | usuários liberados para a coop 3069     |
-   | `3069_não_autorizados`  | usuários proibidos na coop 3069         |
-   | `0300_autorizados`      | …                                       |
+   | Aba                | Conteúdo (coluna A, um login por linha)   |
+   |--------------------|-------------------------------------------|
+   | `3069_autorizados` | únicos usuários liberados na coop 3069    |
+   | `0300_autorizados` | únicos usuários liberados na coop 300     |
 
    Também aceita uma aba única com as colunas `COOPERATIVA | USUARIO | STATUS`.
    Há um modelo para baixar na tela inicial (`wwwroot/modelos/usuarios_modelo.xlsx`).
@@ -40,11 +39,14 @@ A cada alteração enviada para a branch `main`, o site é atualizado sozinho.
 
 ### Como a classificação funciona
 
-| Situação            | Regra                                                             |
-|---------------------|-------------------------------------------------------------------|
-| ✅ Autorizado        | o usuário está na aba `COOP_autorizados`                          |
-| ⛔ Não autorizado    | o usuário está na aba `COOP_não_autorizados` → **irregular**      |
-| ❓ Não cadastrado    | não está em nenhuma das duas (no *modo rigoroso* também é irregular) |
+Modelo de **lista de autorizados**: só quem está na aba `COOP_autorizados` pode atuar naquela cooperativa.
+
+| Situação          | Regra                                                         |
+|-------------------|---------------------------------------------------------------|
+| ✅ Autorizado      | o usuário está na aba `COOP_autorizados` da cooperativa       |
+| ⛔ Não autorizado  | qualquer outro usuário que atuou na cooperativa → **irregular** |
+
+Aba de autorizados vazia = ninguém está liberado naquela cooperativa (todo o volume dela fica irregular).
 
 - **Qual coop é a da atividade?** No painel você escolhe: `INSTITUICAOORIGEM`, `INSTITUICADESTINO` ou qualquer uma das duas (padrão).
 - Maiúsculas/minúsculas, acentos e zeros à esquerda são ignorados (`0300` = `300`, `laisa.caetano` = `LAISA.CAETANO`).
@@ -53,12 +55,12 @@ A cada alteração enviada para a branch `main`, o site é atualizado sozinho.
 ### O que o painel mostra
 
 - Alerta com o total de atividades irregulares e quem as fez
-- Indicadores: volume do arquivo, volume nas coops monitoradas, irregulares, usuários irregulares, não cadastrados
+- Indicadores: volume do arquivo, volume nas coops monitoradas, atividades e usuários irregulares, volume feito por autorizados
 - Um card por cooperativa com a divisão do volume e os usuários sinalizados
 - Volume por hora (arquivo diário) ou por dia (mensal), separado por situação
 - Ranking de usuários por volume e os procedimentos feitos nas atividades irregulares
-- Tabelas com busca e exportação em CSV (abre direto no Excel): ocorrências irregulares, usuários por coop e listas cadastradas
-- Filtros por cooperativa, período, critério de coop e modo rigoroso
+- Tabelas com busca e exportação em CSV (abre direto no Excel): ocorrências irregulares, usuários por coop e lista de autorizados
+- Filtros por cooperativa, período e critério de coop
 
 ## Rodar no computador (opcional)
 
@@ -74,7 +76,7 @@ dotnet run --project src/CoopAudit.Web
 src/
   CoopAudit.Core/          regras de negócio (sem dependências externas)
     Xlsx/XlsxWorkbook.cs   leitor .xlsx em streaming (rápido e leve no navegador)
-    UserDirectory.cs       leitura das listas de autorizados / não autorizados
+    UserDirectory.cs       leitura da lista de autorizados por coop
     ActivityLoader.cs      leitura da planilha de atividades (por nome de coluna)
     AuditEngine.cs         cruzamento e indicadores do dashboard
   CoopAudit.Web/           interface Blazor WebAssembly

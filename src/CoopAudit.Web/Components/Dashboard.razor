@@ -66,14 +66,6 @@
             </div>
         </div>
     }
-    <label class="toggle compact">
-        <input type="checkbox" checked="@opt.UnlistedIsIrregular" @onchange="e => Apply(opt with { UnlistedIsIrregular = e.Value is true })" />
-        <span class="track"><span class="thumb"></span></span>
-        <span>
-            <span class="field-label">Modo rigoroso</span>
-            <span class="field-help">Não cadastrados = irregulares</span>
-        </span>
-    </label>
 </section>
 
 @* ---------- Alerta ---------- *@
@@ -103,14 +95,7 @@ else
         <div>
             <div class="alert-title">Nenhum usuário não autorizado atuou nas cooperativas monitoradas</div>
             <div class="alert-text">
-                @if (r.UnlistedActivities > 0)
-                {
-                    <span>Atenção: @Fmt.N(r.UnlistedActivities) atividades foram feitas por usuários que não estão em nenhuma lista. Revise o cadastro ou ative o modo rigoroso.</span>
-                }
-                else
-                {
-                    <span>Todo o volume foi feito por usuários autorizados.</span>
-                }
+                <span>Todo o volume foi feito por usuários da lista de autorizados.</span>
             </div>
         </div>
     </section>
@@ -124,8 +109,8 @@ else
              Hint="@($"{Fmt.Pct(r.IrregularShare, 2)} do volume monitorado")" />
     <KpiCard Label="Usuários irregulares" Value="@Fmt.N(r.IrregularUsers)" Tone="@(r.IrregularUsers > 0 ? "bad" : "ok")"
              Hint="@($"de {Fmt.N(r.Users.Select(u => u.User).Distinct().Count())} usuários atuando")" />
-    <KpiCard Label="Por não cadastrados" Value="@Fmt.N(r.UnlistedActivities)" Tone="@(r.UnlistedActivities > 0 ? "warn" : "")"
-             Hint="@($"{Fmt.Pct(r.UnlistedActivities, r.MonitoredActivities)} · fora das listas")" />
+    <KpiCard Label="Volume por autorizados" Value="@Fmt.N(r.StatusTotals.Autorizado)" Tone="ok"
+             Hint="@($"{Fmt.Pct(r.StatusTotals.Autorizado, r.StatusTotals.Total)} do volume · {Fmt.N(r.Users.Where(u => !u.Irregular).Select(u => u.User).Distinct().Count())} usuário(s)")" />
 </section>
 
 @* ---------- Cooperativas ---------- *@
@@ -142,17 +127,11 @@ else
                 <div class="coop-code">Coop <strong>@c.Label</strong></div>
                 @if (c.Irregular > 0)
                 {
-                    <span class="badge bad"><StatusIcon Status="AccessStatus.NaoAutorizado" /> @Fmt.N(c.Irregular) irregular(es)</span>
+                    <span class="badge bad"><StatusIcon Status="AccessStatus.NaoAutorizado" /> @Fmt.Pct(c.Irregular, c.Volume.Total, 0) irregular</span>
                 }
                 else if (c.Volume.Total == 0)
                 {
                     <span class="badge neutral">Sem volume</span>
-                }
-                else if (c.Volume.NaoCadastrado > 0)
-                {
-                    <span class="badge warn" title="Sem usuários bloqueados atuando, mas há volume de usuários fora das listas">
-                        <StatusIcon Status="AccessStatus.NaoCadastrado" /> @Fmt.Pct(c.Volume.NaoCadastrado, c.Volume.Total, 0) fora das listas
-                    </span>
                 }
                 else
                 {
@@ -163,12 +142,11 @@ else
                 <div><span class="num">@Fmt.N(c.Volume.Total)</span><span class="lbl">atividades</span></div>
                 <div><span class="num">@Fmt.N(c.UsersActing)</span><span class="lbl">usuários atuando</span></div>
                 <div><span class="num">@c.AuthorizedActing/@c.ListedAuthorized</span><span class="lbl">autorizados ativos</span></div>
-                <div><span class="num">@c.ListedUnauthorized</span><span class="lbl">bloqueados na lista</span></div>
+                <div><span class="num @(c.FlaggedUsers.Count > 0 ? "txt-bad" : "")">@c.FlaggedUsers.Count</span><span class="lbl">não autorizados atuando</span></div>
             </div>
             <StackBar Counts="c.Volume" Height="12" />
             <div class="coop-legend">
                 <span><i class="sw ok"></i>@Fmt.N(c.Volume.Autorizado) autorizado</span>
-                <span><i class="sw warn"></i>@Fmt.N(c.Volume.NaoCadastrado) não cadastrado</span>
                 <span><i class="sw bad"></i>@Fmt.N(c.Volume.NaoAutorizado) não autorizado</span>
             </div>
             @if (c.FlaggedUsers.Count > 0)
@@ -197,7 +175,6 @@ else
             <h3>Volume @(r.TimelineIsHourly ? "por hora" : "por dia")</h3>
             <div class="legend-inline">
                 <span><i class="sw ok"></i>Autorizado</span>
-                <span><i class="sw warn"></i>Não cadastrado</span>
                 <span><i class="sw bad"></i>Não autorizado</span>
             </div>
         </div>
@@ -289,7 +266,7 @@ else
             Usuários por cooperativa <span class="count">@Fmt.N(r.Users.Count)</span>
         </button>
         <button class="@(tab == "lists" ? "on" : "")" @onclick='() => { tab = "lists"; page = 0; }'>
-            Listas cadastradas
+            Lista de autorizados
         </button>
         @if (dir.Warnings.Count + ds.Warnings.Count > 0 || ds.DuplicateRows > 0)
         {
@@ -330,9 +307,9 @@ else
                                 <td class="nowrap">@Fmt.DateTime(a.When)</td>
                                 <td><strong>@CoopLabel(h.Coop)</strong></td>
                                 <td class="nowrap mono">@a.User</td>
-                                <td><StatusBadge Status="h.Status" Irregular="h.Irregular" /></td>
+                                <td><StatusBadge Status="h.Status" /></td>
                                 <td>@a.ActivityName</td>
-                                <td>@a.Procedure</td>
+                                <td class="nowrap">@a.Procedure</td>
                                 <td class="nowrap">@a.OriginCoop/@a.OriginUnit → @a.DestCoop/@a.DestUnit</td>
                                 <td class="mono small">@a.RecordId</td>
                                 <td class="just" title="@a.Justification">@a.Justification</td>
@@ -352,7 +329,7 @@ else
             <input class="search" placeholder="Buscar usuário…" value="@search" @oninput="e => { search = e.Value?.ToString() ?? string.Empty; page = 0; }" />
             <div class="segmented sm">
                 <button class="@(statusFilter == null ? "on" : "")" @onclick="() => { statusFilter = null; page = 0; }">Todos</button>
-                @foreach (var s in new[] { AccessStatus.NaoAutorizado, AccessStatus.NaoCadastrado, AccessStatus.Autorizado })
+                @foreach (var s in new[] { AccessStatus.NaoAutorizado, AccessStatus.Autorizado })
                 {
                     <button class="@(statusFilter == s ? "on" : "")" @onclick="() => { statusFilter = s; page = 0; }">@Fmt.StatusLabel(s)</button>
                 }
@@ -380,7 +357,7 @@ else
                             <tr class="@(u.Irregular ? "row-flag" : "")">
                                 <td><strong>@CoopLabel(u.Coop)</strong></td>
                                 <td class="mono">@u.User</td>
-                                <td><StatusBadge Status="u.Status" Irregular="u.Irregular" /></td>
+                                <td><StatusBadge Status="u.Status" /></td>
                                 <td class="r">@Fmt.N(u.Count)</td>
                                 <td>
                                     <div class="mini">
@@ -420,13 +397,17 @@ else
                             </ul>
                         </div>
                         <div>
-                            <div class="field-label"><StatusIcon Status="AccessStatus.NaoAutorizado" /> Não autorizados (@c.Unauthorized.Count)</div>
-                            @if (c.Unauthorized.Count == 0) { <div class="muted small">Lista vazia</div> }
+                            @{ var bad = r.Users.Where(u => u.Coop == c.Coop && u.Irregular).OrderByDescending(u => u.Count).ToList(); }
+                            <div class="field-label"><StatusIcon Status="AccessStatus.NaoAutorizado" /> Não autorizados que atuaram (@bad.Count)</div>
+                            @if (bad.Count == 0) { <div class="muted small">Nenhum</div> }
                             <ul>
-                                @foreach (var u in c.Unauthorized.OrderBy(x => x))
+                                @foreach (var u in bad.Take(15))
                                 {
-                                    var hasAct = act.TryGetValue(u, out var n);
-                                    <li class="@(hasAct ? "hot" : "")"><span class="mono">@u</span> <span class="@(hasAct ? "txt-bad" : "muted")">@(hasAct ? $"atuou {Fmt.N(n)}×" : "não atuou")</span></li>
+                                    <li class="hot"><span class="mono">@u.User</span> <span class="txt-bad">@Fmt.N(u.Count)×</span></li>
+                                }
+                                @if (bad.Count > 15)
+                                {
+                                    <li><span class="muted">+@(bad.Count - 15) — veja a aba "Usuários por cooperativa"</span></li>
                                 }
                             </ul>
                         </div>
