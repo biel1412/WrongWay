@@ -1,7 +1,7 @@
 @page "/"
 @inject AuditSession Session
 
-<PageTitle>CoopAudit · Monitor de acessos</PageTitle>
+<PageTitle>CoopAudit</PageTitle>
 
 @if (Session.HasResult && !busy)
 {
@@ -9,127 +9,115 @@
 }
 else
 {
-    <section class="hero">
-        <div class="hero-text">
-            <span class="eyebrow">Auditoria de atuação</span>
-            <h1>Quem está atuando em cada cooperativa?</h1>
+    <section class="intro">
+        <div class="intro-copy">
+            <h1>Veja quem trabalhou nas suas cooperativas sem estar autorizado</h1>
             <p>
-                Envie a planilha de atividades (diária ou mensal) e a planilha de usuários.
-                O sistema cruza as duas e mostra, em segundos, se usuários <strong>não autorizados</strong>
-                estão trabalhando no volume das cooperativas monitoradas.
+                Envie a planilha de atividades do dia ou do mês e a lista de autorizados.
+                O CoopAudit cruza as duas e aponta cada atividade feita por alguém que não está na lista.
             </p>
         </div>
+        <LogoMark Size="220" Tile="false" Class="intro-mark" />
     </section>
 
-    <section class="upload-grid">
-        <div class="drop @(dragA ? "drag" : "") @(activityFiles.Count > 0 ? "filled" : "")"
-             @ondragenter="() => dragA = true" @ondragleave="() => dragA = false" @ondrop="() => dragA = false">
-            <InputFile OnChange="OnActivityFiles" multiple accept=".xlsx" aria-label="Planilha de atividades" />
-            <div class="drop-step">1</div>
-            <div class="drop-icon">
-                <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16v16H4z" /><path d="M4 9h16M4 14h16M10 4v16" /></svg>
-            </div>
-            <div class="drop-title">Planilha de atividades</div>
-            <div class="drop-sub">Diária ou mensal · mesmo layout do compilado (.xlsx)</div>
-            @if (activityFiles.Count == 0)
-            {
-                <div class="drop-cta">Arraste aqui ou <u>clique para escolher</u></div>
-                <div class="drop-note">Para juntar vários dias, selecione todos os arquivos de uma vez.</div>
-            }
-            else
-            {
-                <ul class="file-list">
-                    @foreach (var f in activityFiles)
+    <section class="intake">
+        <div class="drops">
+            <div class="drop @(dragA ? "drag" : "") @(activityFiles.Count > 0 ? "filled" : "")"
+                 @ondragenter="() => dragA = true" @ondragleave="() => dragA = false" @ondrop="() => dragA = false">
+                <InputFile OnChange="OnActivityFiles" multiple accept=".xlsx" aria-label="Planilha de atividades" />
+                <div class="drop-icon">
+                    <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="2" /><path d="M4 9h16M4 14h16M10 4v16" /></svg>
+                </div>
+                <div class="drop-body">
+                    <div class="drop-title">Planilha de atividades</div>
+                    @if (activityFiles.Count == 0)
                     {
-                        <li><span class="check">✓</span> @f.Name <span class="muted">· @AuditSession.FormatBytes(f.Size)</span></li>
+                        <div class="drop-sub">Diária ou mensal, no layout do compilado. Para juntar vários dias, selecione todos os arquivos juntos.</div>
+                        <div class="drop-cta">Arraste o .xlsx ou clique para escolher</div>
                     }
-                </ul>
-                <div class="drop-note">Clique para trocar</div>
-            }
-        </div>
-
-        <div class="drop @(dragU ? "drag" : "") @(usersFile != null ? "filled" : "")"
-             @ondragenter="() => dragU = true" @ondragleave="() => dragU = false" @ondrop="() => dragU = false">
-            <InputFile OnChange="OnUsersFile" accept=".xlsx" aria-label="Planilha de usuários" />
-            <div class="drop-step">2</div>
-            <div class="drop-icon">
-                <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.2" /><path d="M3 19c.8-3.2 3.2-5 6-5s5.2 1.8 6 5" /><path d="M16 11l2 2 3.5-3.5" /></svg>
+                    else
+                    {
+                        <ul class="file-list">
+                            @foreach (var f in activityFiles)
+                            {
+                                <li><StatusIcon Status="AccessStatus.Autorizado" /> <span class="fname">@f.Name</span> <span class="muted">@AuditSession.FormatBytes(f.Size)</span></li>
+                            }
+                        </ul>
+                        <div class="drop-cta subtle">Clique para trocar</div>
+                    }
+                </div>
             </div>
-            <div class="drop-title">Planilha de usuários</div>
-            <div class="drop-sub">Uma aba <code>COOP_autorizados</code> por cooperativa</div>
-            @if (usersFile == null)
-            {
-                <div class="drop-cta">Arraste aqui ou <u>clique para escolher</u></div>
-                <div class="drop-note"><a href="modelos/usuarios_modelo.xlsx" download @onclick:stopPropagation="true">Baixar modelo</a></div>
-            }
-            else
-            {
-                <ul class="file-list">
-                    <li><span class="check">✓</span> @usersFile.Name <span class="muted">· @AuditSession.FormatBytes(usersFile.Size)</span></li>
-                </ul>
-                <div class="drop-note">Clique para trocar</div>
-            }
-        </div>
-    </section>
 
-    <section class="setup card">
-        <div class="setup-row">
+            <div class="drop @(dragU ? "drag" : "") @(usersFile != null ? "filled" : "")"
+                 @ondragenter="() => dragU = true" @ondragleave="() => dragU = false" @ondrop="() => dragU = false">
+                <InputFile OnChange="OnUsersFile" accept=".xlsx" aria-label="Lista de autorizados" />
+                <div class="drop-icon">
+                    <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.2" /><path d="M3 19c.8-3.2 3.2-5 6-5s5.2 1.8 6 5" /><path d="M16 11l2 2 3.5-3.5" /></svg>
+                </div>
+                <div class="drop-body">
+                    <div class="drop-title">Lista de autorizados</div>
+                    @if (usersFile == null)
+                    {
+                        <div class="drop-sub">Uma aba <code>COOP_autorizados</code> por cooperativa, com um login por linha.</div>
+                        <div class="drop-cta">Arraste o .xlsx ou clique para escolher</div>
+                        <a class="drop-link" href="modelos/usuarios_modelo.xlsx" download @onclick:stopPropagation="true">Baixar modelo da lista</a>
+                    }
+                    else
+                    {
+                        <ul class="file-list">
+                            <li><StatusIcon Status="AccessStatus.Autorizado" /> <span class="fname">@usersFile.Name</span> <span class="muted">@AuditSession.FormatBytes(usersFile.Size)</span></li>
+                        </ul>
+                        <div class="drop-cta subtle">Clique para trocar</div>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <div class="intake-foot">
             <div>
-                <div class="field-label">Como identificar a cooperativa da atividade</div>
+                <div class="field-label">A atividade pertence à cooperativa pela</div>
                 <div class="segmented">
                     @foreach (var m in Enum.GetValues<CoopMatchMode>())
                     {
                         <button class="@(mode == m ? "on" : "")" @onclick="() => mode = m">@Fmt.ModeLabel(m)</button>
                     }
                 </div>
-                <div class="field-help">
-                    Usa as colunas <code>INSTITUICAOORIGEM</code> e/ou <code>INSTITUICADESTINO</code>. Pode ser alterado depois, no painel.
-                </div>
             </div>
-        </div>
-        <div class="setup-actions">
-            @if (error != null)
-            {
-                <div class="error-box" role="alert">
-                    <strong>Não foi possível analisar.</strong> @error
-                </div>
-            }
-            <button class="btn primary big" disabled="@(!CanAnalyze)" @onclick="Analyze">
-                Analisar planilhas
-                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 12h14M13 6l6 6-6 6" /></svg>
-            </button>
+            <div class="intake-action">
+                @if (error != null)
+                {
+                    <div class="error-box" role="alert">
+                        <strong>Não foi possível analisar.</strong> @error
+                    </div>
+                }
+                <button class="btn primary big" disabled="@(!CanAnalyze)" @onclick="Analyze">Analisar planilhas</button>
+                @if (!CanAnalyze && !busy)
+                {
+                    <div class="field-help">@(activityFiles.Count == 0 && usersFile == null ? "Escolha as duas planilhas para começar." : activityFiles.Count == 0 ? "Falta a planilha de atividades." : "Falta a lista de autorizados.")</div>
+                }
+            </div>
         </div>
     </section>
 
-    <section class="howto">
-        <h3>Como montar a planilha de usuários</h3>
-        <div class="howto-grid">
-            <div class="howto-item">
-                <div class="howto-n">A</div>
-                <div>
-                    <strong>Uma aba por cooperativa</strong>, com o código no nome:
-                    <div class="tabs-demo">
-                        <span>3069_autorizados</span><span>0300_autorizados</span>
-                    </div>
-                    Na coluna A, um login por linha (ex.: <code>laisa.caetano</code>). Maiúsculas, acentos e zeros à esquerda são ignorados.
+    <section class="rules">
+        <h2>Como montar a lista de autorizados</h2>
+        <div class="rules-grid">
+            <div class="rule">
+                <div class="tabs-demo">
+                    <span class="on">3069_autorizados</span><span>0300_autorizados</span>
                 </div>
+                <p><strong>Uma aba por cooperativa</strong>, com o código no nome. Na coluna A, um login por linha, como aparece na coluna USUARIO. Maiúsculas, acentos e zeros à esquerda não importam.</p>
             </div>
-            <div class="howto-item">
-                <div class="howto-n">B</div>
-                <div>
-                    <strong>Só quem está na lista é autorizado.</strong>
-                    <span class="badge ok"><StatusIcon Status="AccessStatus.Autorizado" /> Autorizado</span> está na aba da coop;
-                    qualquer outro usuário que atuar nela é
-                    <span class="badge bad"><StatusIcon Status="AccessStatus.NaoAutorizado" /> Não autorizado</span>.
-                    Aba vazia = ninguém liberado naquela coop.
+            <div class="rule">
+                <div class="rule-badges">
+                    <span class="badge ok"><StatusIcon Status="AccessStatus.Autorizado" /> Autorizado</span>
+                    <span class="badge bad"><StatusIcon Status="AccessStatus.NaoAutorizado" /> Não autorizado</span>
                 </div>
+                <p><strong>Só quem está na aba pode atuar.</strong> Qualquer outro usuário com volume na cooperativa é não autorizado. Uma aba vazia significa que ninguém está liberado ali.</p>
             </div>
-            <div class="howto-item">
-                <div class="howto-n">C</div>
-                <div>
-                    <strong>Ou uma aba única</strong> com as colunas <code>COOPERATIVA</code>, <code>USUARIO</code> e <code>STATUS</code>
-                    (<em>Autorizado</em>). Só as cooperativas presentes na planilha são auditadas.
-                </div>
+            <div class="rule">
+                <div class="rule-cols"><span>COOPERATIVA</span><span>USUARIO</span><span>STATUS</span></div>
+                <p><strong>Também vale uma aba única</strong> com essas três colunas e o status <em>Autorizado</em>. Só as cooperativas presentes na lista são auditadas.</p>
             </div>
         </div>
     </section>
@@ -139,8 +127,8 @@ else
 {
     <div class="overlay" role="status" aria-live="polite">
         <div class="overlay-card">
-            <div class="spinner"></div>
-            <div class="overlay-title">Analisando…</div>
+            <LogoMark Size="56" Class="pulse" />
+            <div class="overlay-title">Cruzando as planilhas</div>
             <div class="overlay-text">@progress</div>
             <div class="bar-indet"><span></span></div>
         </div>

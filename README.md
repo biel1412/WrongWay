@@ -1,4 +1,8 @@
-# CoopAudit · Monitor de acessos por cooperativa
+# CoopAudit
+
+![CoopAudit](src/CoopAudit.Web/wwwroot/img/coopaudit-logo.png)
+
+Auditoria de acesso por cooperativa.
 
 Aplicação web em **C# (Blazor WebAssembly / .NET 10)** que cruza a planilha de atividades (diária ou mensal)
 com a planilha de usuários e mostra, num dashboard, se **usuários não autorizados estão atuando** no volume das
@@ -82,7 +86,9 @@ src/
   CoopAudit.Web/           interface Blazor WebAssembly
     Pages/Home.razor       tela de envio das planilhas
     Components/            dashboard, gráficos, tabelas
-    wwwroot/css/app.css    tema visual
+    wwwroot/css/app.css    tema visual (pinho + latão)
+    wwwroot/img/           logo (símbolo SVG e versão para apresentação)
+    wwwroot/fonts/         Schibsted Grotesk e IBM Plex, hospedadas no próprio site (OFL)
 .github/workflows/deploy.yml   publicação automática no GitHub Pages
 ```
 

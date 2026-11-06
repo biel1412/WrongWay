@@ -8,26 +8,69 @@
     var opt = Session.Options;
 }
 
-<section class="dash-head">
-    <div>
-        <h1>Painel de auditoria</h1>
-        <div class="dash-meta">
-            <span title="@string.Join(", ", ds.Files)"><svg class="mi" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H6v18h12V7z"/><path d="M14 3v4h4"/></svg> @(ds.Files.Count == 1 ? ds.Files[0] : $"{ds.Files.Count} arquivos de atividades")</span>
-            <span><svg class="mi" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3"/><path d="M3 19c.8-3 3.2-5 6-5s5.2 2 6 5"/><path d="M16 5a3 3 0 0 1 0 6M18 14c1.6.6 2.7 2.4 3 5"/></svg> @Session.UsersFileName</span>
-            <span><svg class="mi" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="5" width="16" height="16" rx="2"/><path d="M4 10h16M9 3v4M15 3v4"/></svg> @PeriodText(ds)</span>
+@* ---------- Veredito ---------- *@
+<section class="verdict @(r.IrregularActivities > 0 ? "is-bad" : "is-ok")">
+    <div class="verdict-top">
+        <div class="verdict-context">
+            <span class="ctx-item"><span class="ctx-k">Período</span> @PeriodText(ds)</span>
+            <span class="ctx-item" title="@string.Join(", ", ds.Files)"><span class="ctx-k">Atividades</span> @(ds.Files.Count == 1 ? ds.Files[0] : $"{ds.Files.Count} arquivos")</span>
+            <span class="ctx-item"><span class="ctx-k">Autorizados</span> @Session.UsersFileName</span>
+        </div>
+        <div class="verdict-actions">
+            <button class="btn on-dark" @onclick="ExportIrregular" disabled="@(r.IrregularHits.Count == 0)">
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 4v11M7 10l5 5 5-5M5 20h14" /></svg>
+                Exportar irregulares
+            </button>
+            <button class="btn brass" @onclick="OnReset">Nova análise</button>
         </div>
     </div>
-    <div class="dash-actions">
-        <button class="btn ghost" @onclick="ExportIrregular" disabled="@(r.IrregularHits.Count == 0)">
-            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 4v11M7 10l5 5 5-5M5 20h14" /></svg>
-            Exportar irregulares
-        </button>
-        <button class="btn primary" @onclick="OnReset">Nova análise</button>
+
+    <div class="verdict-body">
+        <div class="verdict-main">
+            @if (r.IrregularActivities > 0)
+            {
+                <div class="verdict-num">@Fmt.N(r.IrregularActivities)</div>
+                <p class="verdict-text">
+                    atividades feitas por quem não está na lista de autorizados.
+                    Isso é @Fmt.Pct(r.IrregularShare) do volume das cooperativas monitoradas, distribuído entre
+                    @Fmt.N(r.IrregularUsers) @(r.IrregularUsers == 1 ? "usuário" : "usuários").
+                </p>
+                <button class="verdict-link" @onclick='() => { tab = "irreg"; page = 0; }'>Ver as ocorrências na tabela</button>
+            }
+            else
+            {
+                <div class="verdict-num ok">0</div>
+                <p class="verdict-text">
+                    atividades fora da lista. Todo o volume das cooperativas monitoradas foi feito por usuários autorizados.
+                </p>
+            }
+        </div>
+        <div class="verdict-gates">
+            @foreach (var c in r.Coops)
+            {
+                var tot = c.Volume.Total;
+                <button class="gate @(opt.CoopFilter == c.Coop ? "selected" : "")" @onclick="() => Apply(opt with { CoopFilter = opt.CoopFilter == c.Coop ? null : c.Coop })"
+                        aria-label="Filtrar pela coop @c.Label">
+                    <span class="gate-head">
+                        <span class="gate-name">Coop @c.Label</span>
+                        <span class="gate-pct @(c.Irregular > 0 ? "bad" : "ok")">@(tot == 0 ? "sem volume" : Fmt.Pct(c.Irregular, tot, 0) + " fora da lista")</span>
+                    </span>
+                    <span class="gate-bar">
+                        @if (tot > 0)
+                        {
+                            if (c.Volume.Autorizado > 0) { <span class="g ok" style="width:@(Pc(c.Volume.Autorizado, tot))%"></span> }
+                            if (c.Irregular > 0) { <span class="g bad" style="width:@(Pc(c.Irregular, tot))%"></span> }
+                        }
+                    </span>
+                    <span class="gate-foot">@Fmt.N(c.Irregular) de @Fmt.N(tot) atividades por @Fmt.N(c.FlaggedUsers.Count) @(c.FlaggedUsers.Count == 1 ? "usuário" : "usuários") fora da lista</span>
+                </button>
+            }
+        </div>
     </div>
 </section>
 
 @* ---------- Filtros ---------- *@
-<section class="filters card">
+<section class="filters">
     <div class="filter">
         <div class="field-label">Cooperativa</div>
         <div class="chips">
@@ -68,55 +111,30 @@
     }
 </section>
 
-@* ---------- Alerta ---------- *@
-@if (r.IrregularActivities > 0)
-{
-    <section class="alert bad">
-        <div class="alert-icon"><StatusIcon Status="AccessStatus.NaoAutorizado" Size="26" /></div>
-        <div>
-            <div class="alert-title">
-                @Fmt.N(r.IrregularActivities) @(r.IrregularActivities == 1 ? "atividade irregular encontrada" : "atividades irregulares encontradas")
-            </div>
-            <div class="alert-text">
-                @Fmt.N(r.IrregularUsers) @(r.IrregularUsers == 1 ? "usuário atuou" : "usuários atuaram") sem autorização em
-                @(string.Join(", ", r.Coops.Where(c => c.Irregular > 0).Select(c => "Coop " + c.Label))).
-                @if (r.IrregularHits.Count > 0)
-                {
-                    <a href="javascript:void(0)" @onclick='() => { tab = "irreg"; }'> Ver ocorrências ↓</a>
-                }
-            </div>
-        </div>
-    </section>
-}
-else
-{
-    <section class="alert ok">
-        <div class="alert-icon"><StatusIcon Status="AccessStatus.Autorizado" Size="26" /></div>
-        <div>
-            <div class="alert-title">Nenhum usuário não autorizado atuou nas cooperativas monitoradas</div>
-            <div class="alert-text">
-                <span>Todo o volume foi feito por usuários da lista de autorizados.</span>
-            </div>
-        </div>
-    </section>
-}
-
-@* ---------- KPIs ---------- *@
-<section class="kpis">
-    <KpiCard Label="Linhas no arquivo" Value="@Fmt.N(r.FileRows)" Hint="@($"{Fmt.N(r.FileUsers)} usuários · {Fmt.N(ds.AllCoops.Count)} instituições")" />
-    <KpiCard Label="Volume nas coops monitoradas" Value="@Fmt.N(r.MonitoredActivities)" Hint="@($"{Fmt.Pct(r.MonitoredActivities, r.FileRows)} do arquivo · {r.Coops.Count} coop(s)")" />
-    <KpiCard Label="Atividades irregulares" Value="@Fmt.N(r.IrregularActivities)" Tone="@(r.IrregularActivities > 0 ? "bad" : "ok")"
-             Hint="@($"{Fmt.Pct(r.IrregularShare, 2)} do volume monitorado")" />
-    <KpiCard Label="Usuários irregulares" Value="@Fmt.N(r.IrregularUsers)" Tone="@(r.IrregularUsers > 0 ? "bad" : "ok")"
-             Hint="@($"de {Fmt.N(r.Users.Select(u => u.User).Distinct().Count())} usuários atuando")" />
-    <KpiCard Label="Volume por autorizados" Value="@Fmt.N(r.StatusTotals.Autorizado)" Tone="ok"
-             Hint="@($"{Fmt.Pct(r.StatusTotals.Autorizado, r.StatusTotals.Total)} do volume · {Fmt.N(r.Users.Where(u => !u.Irregular).Select(u => u.User).Distinct().Count())} usuário(s)")" />
+@* ---------- Números ---------- *@
+<section class="stats">
+    <div class="stat">
+        <div class="stat-v">@Fmt.N(r.FileRows)</div>
+        <div class="stat-l">linhas no arquivo, de @Fmt.N(r.FileUsers) usuários em @Fmt.N(ds.AllCoops.Count) instituições</div>
+    </div>
+    <div class="stat">
+        <div class="stat-v">@Fmt.N(r.MonitoredActivities)</div>
+        <div class="stat-l">atividades nas cooperativas monitoradas (@Fmt.Pct(r.MonitoredActivities, r.FileRows) do arquivo)</div>
+    </div>
+    <div class="stat">
+        <div class="stat-v @(r.IrregularUsers > 0 ? "bad" : "")">@Fmt.N(r.IrregularUsers)</div>
+        <div class="stat-l">usuários atuando fora da lista, de @Fmt.N(r.Users.Select(u => u.User).Distinct().Count()) que atuaram</div>
+    </div>
+    <div class="stat">
+        <div class="stat-v ok">@Fmt.N(r.StatusTotals.Autorizado)</div>
+        <div class="stat-l">atividades feitas por autorizados (@Fmt.Pct(r.StatusTotals.Autorizado, r.StatusTotals.Total) do volume)</div>
+    </div>
 </section>
 
 @* ---------- Cooperativas ---------- *@
 <section class="section-head">
-    <h2>Cooperativas monitoradas</h2>
-    <span class="muted">Clique em um card para filtrar o painel</span>
+    <h2>Por cooperativa</h2>
+    <span class="muted">Clique em uma cooperativa para filtrar o painel</span>
 </section>
 <section class="coop-grid">
     @foreach (var c in r.Coops)
@@ -170,7 +188,7 @@ else
 
 @* ---------- Gráficos ---------- *@
 <section class="grid-2-1">
-    <div class="card">
+    <div class="panel">
         <div class="card-head">
             <h3>Volume @(r.TimelineIsHourly ? "por hora" : "por dia")</h3>
             <div class="legend-inline">
@@ -180,7 +198,7 @@ else
         </div>
         <TimelineChart Buckets="r.Timeline" />
     </div>
-    <div class="card">
+    <div class="panel">
         <div class="card-head"><h3>Situação do volume</h3></div>
         <Donut Counts="r.StatusTotals" CenterValue="@Fmt.N(r.StatusTotals.Total)" CenterLabel="atividades" />
         @if (opt.Mode == CoopMatchMode.OrigemOuDestino && r.StatusTotals.Total != r.MonitoredActivities)
@@ -191,7 +209,7 @@ else
 </section>
 
 <section class="grid-1-1">
-    <div class="card">
+    <div class="panel">
         <div class="card-head">
             <h3>Usuários com mais volume</h3>
             <span class="muted">top 12 · cor = situação</span>
@@ -215,7 +233,7 @@ else
             }
         </ul>
     </div>
-    <div class="card">
+    <div class="panel">
         <div class="card-head">
             <h3>O que foi feito nas atividades irregulares</h3>
         </div>
@@ -257,7 +275,7 @@ else
 </section>
 
 @* ---------- Tabelas ---------- *@
-<section class="card tables" id="detalhes">
+<section class="panel tables" id="detalhes">
     <div class="tabs">
         <button class="@(tab == "irreg" ? "on" : "")" @onclick='() => { tab = "irreg"; page = 0; }'>
             Ocorrências irregulares <span class="count bad">@Fmt.N(r.IrregularHits.Count)</span>

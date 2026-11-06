@@ -1,0 +1,18 @@
+@* Símbolo do CoopAudit: célula hexagonal (cooperação) em forma de "C", com uma fechadura (controle de acesso). *@
+<svg class="logo-mark @Class" viewBox="0 0 64 64" width="@Size" height="@Size" role="img" aria-label="CoopAudit">
+    @if (Tile)
+    {
+        <rect width="64" height="64" rx="16" fill="var(--pine-900)" />
+    }
+    <path d="M49.5 16.6 35 8.2 14.2 20.2v23.6L35 55.8l14.5-8.4" fill="none" stroke="@(Tile ? "var(--paper)" : "currentColor")"
+          stroke-width="6.4" stroke-linecap="round" stroke-linejoin="round" />
+    <circle cx="32" cy="27.5" r="5.6" fill="var(--brass)" />
+    <path d="M29.3 30.5h5.4l1.7 10.7h-8.8z" fill="var(--brass)" />
+</svg>
+
+@code {
+    [Parameter] public int Size { get; set; } = 36;
+    /// <summary>true = símbolo sobre o quadrado verde-escuro; false = só o traço, herdando a cor do texto.</summary>
+    [Parameter] public bool Tile { get; set; } = true;
+    [Parameter] public string? Class { get; set; }
+}
