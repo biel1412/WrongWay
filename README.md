@@ -1,8 +1,8 @@
-# CoopAudit
+# Nexus
 
-![CoopAudit](src/CoopAudit.Web/wwwroot/img/coopaudit-logo.png)
+![Nexus](src/Nexus.Web/wwwroot/img/nexus-logo.png)
 
-Auditoria de acesso por cooperativa.
+Inspeção de acesso por cooperativa.
 
 Aplicação web em **C# (Blazor WebAssembly / .NET 10)** que cruza a planilha de atividades (diária ou mensal)
 com a planilha de usuários e mostra, num dashboard, se **usuários não autorizados estão atuando** no volume das
@@ -71,19 +71,19 @@ Aba de autorizados vazia = ninguém está liberado naquela cooperativa (todo o v
 Requer o [.NET 10 SDK](https://dotnet.microsoft.com/download).
 
 ```bash
-dotnet run --project src/CoopAudit.Web
+dotnet run --project src/Nexus.Web
 ```
 
 ## Estrutura
 
 ```
 src/
-  CoopAudit.Core/          regras de negócio (sem dependências externas)
+  Nexus.Core/          regras de negócio (sem dependências externas)
     Xlsx/XlsxWorkbook.cs   leitor .xlsx em streaming (rápido e leve no navegador)
     UserDirectory.cs       leitura da lista de autorizados por coop
     ActivityLoader.cs      leitura da planilha de atividades (por nome de coluna)
     AuditEngine.cs         cruzamento e indicadores do dashboard
-  CoopAudit.Web/           interface Blazor WebAssembly
+  Nexus.Web/           interface Blazor WebAssembly
     Pages/Home.razor       tela de envio das planilhas
     Components/            dashboard, gráficos, tabelas
     wwwroot/css/app.css    tema visual (pinho + latão)

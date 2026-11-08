@@ -1,0 +1,6 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/Nexus.Core/Nexus.Core.csproj" />
+    <Project Path="src/Nexus.Web/Nexus.Web.csproj" />
+  </Folder>
+</Solution>

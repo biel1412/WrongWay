@@ -1,4 +1,4 @@
-# Publica o CoopAudit no GitHub Pages a cada push na branch main.
+# Publica o Nexus no GitHub Pages a cada push na branch main.
 # Pré-requisito (uma vez só): Settings → Pages → Build and deployment → Source: "GitHub Actions".
 name: Publicar no GitHub Pages
 
@@ -36,14 +36,14 @@ jobs:
         id: aot
         if: steps.workload.outcome == 'success'
         continue-on-error: true
-        run: dotnet publish src/CoopAudit.Web/CoopAudit.Web.csproj -c Release -o out -p:RunAOTCompilation=true
+        run: dotnet publish src/Nexus.Web/Nexus.Web.csproj -c Release -o out -p:RunAOTCompilation=true
 
       # Se o AOT falhar por qualquer motivo, publica no modo normal (funciona igual, só é mais lento).
       - name: Publicar (padrão)
         if: steps.workload.outcome != 'success' || steps.aot.outcome != 'success'
         run: |
           rm -rf out
-          dotnet publish src/CoopAudit.Web/CoopAudit.Web.csproj -c Release -o out
+          dotnet publish src/Nexus.Web/Nexus.Web.csproj -c Release -o out
 
       - name: Ajustar caminho base para o GitHub Pages
         run: |

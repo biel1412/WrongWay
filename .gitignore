@@ -7,4 +7,4 @@ out/
 *.suo
 # Nunca versionar planilhas com dados reais
 *.xlsx
-!src/CoopAudit.Web/wwwroot/modelos/*.xlsx
+!src/Nexus.Web/wwwroot/modelos/*.xlsx

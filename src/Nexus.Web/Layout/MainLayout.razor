@@ -1,0 +1,26 @@
+@inherits LayoutComponentBase
+
+<div class="shell">
+    <header class="topbar">
+        <a class="brand" href="" aria-label="Nexus, início">
+            <LogoMark Size="34" />
+            <span class="brand-text">
+                <span class="brand-name">Nexus</span>
+                <span class="brand-sub">Inspeção de acesso por cooperativa</span>
+            </span>
+        </a>
+        <div class="privacy" title="As planilhas são lidas pelo seu navegador e não são enviadas para nenhum servidor.">
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="11" width="14" height="10" rx="2" /><path d="M8 11V7a4 4 0 0 1 8 0v4" /></svg>
+            As planilhas não saem do seu computador
+        </div>
+    </header>
+
+    <main class="content">
+        @Body
+    </main>
+
+    <footer class="footer">
+        <LogoMark Size="18" Tile="false" />
+        Nexus
+    </footer>
+</div>
