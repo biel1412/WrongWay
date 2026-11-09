@@ -11,10 +11,10 @@ else
 {
     <section class="intro">
         <div class="intro-copy">
-            <h1>Inspeção de acesso nas cooperativas</h1>
+            <h1>Inspeção de acesso na cooperativa @AuditScope.Coop</h1>
             <p>
                 Cruze a planilha de atividades, diária ou mensal, com a lista de autorizados e identifique
-                cada atividade feita por um usuário sem permissão para atuar naquela cooperativa.
+                cada atividade feita por um usuário sem permissão para atuar na coop @AuditScope.Coop.
             </p>
         </div>
         <LogoMark Size="220" Tile="false" Class="intro-mark" />
@@ -58,7 +58,7 @@ else
                     <div class="drop-title">Lista de autorizados</div>
                     @if (usersFile == null)
                     {
-                        <div class="drop-sub">Uma aba <code>COOP_autorizados</code> por cooperativa, com um login por linha.</div>
+                        <div class="drop-sub">Aba <code>@(AuditScope.Coop)_autorizados</code>, com um login por linha.</div>
                         <div class="drop-cta">Arraste o .xlsx ou clique para escolher</div>
                         <a class="drop-link" href="modelos/usuarios_modelo.xlsx" download @onclick:stopPropagation="true">Baixar modelo da lista</a>
                     }
@@ -104,20 +104,20 @@ else
         <div class="rules-grid">
             <div class="rule">
                 <div class="tabs-demo">
-                    <span class="on">3069_autorizados</span><span>0300_autorizados</span>
+                    <span class="on">@(AuditScope.Coop)_autorizados</span>
                 </div>
-                <p><strong>Uma aba por cooperativa</strong>, com o código no nome. Na coluna A, um login por linha, como aparece na coluna USUARIO. Maiúsculas, acentos e zeros à esquerda não importam.</p>
+                <p><strong>Uma aba chamada @(AuditScope.Coop)_autorizados.</strong> Na coluna A, um login por linha, como aparece na coluna USUARIO. Maiúsculas e acentos não importam.</p>
             </div>
             <div class="rule">
                 <div class="rule-badges">
                     <span class="badge ok"><StatusIcon Status="AccessStatus.Autorizado" /> Autorizado</span>
                     <span class="badge bad"><StatusIcon Status="AccessStatus.NaoAutorizado" /> Não autorizado</span>
                 </div>
-                <p><strong>Só quem está na aba pode atuar.</strong> Qualquer outro usuário com volume na cooperativa é não autorizado. Uma aba vazia significa que ninguém está liberado ali.</p>
+                <p><strong>Só quem está na aba pode atuar.</strong> Qualquer outro usuário com volume na coop @AuditScope.Coop é não autorizado. Uma aba vazia significa que ninguém está liberado.</p>
             </div>
             <div class="rule">
                 <div class="rule-cols"><span>COOPERATIVA</span><span>USUARIO</span><span>STATUS</span></div>
-                <p><strong>Também vale uma aba única</strong> com essas três colunas e o status <em>Autorizado</em>. Só as cooperativas presentes na lista são auditadas.</p>
+                <p><strong>Também vale uma aba única</strong> com essas três colunas e o status <em>Autorizado</em>. Linhas e abas de outras cooperativas são ignoradas.</p>
             </div>
         </div>
     </section>

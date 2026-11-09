@@ -32,7 +32,7 @@
                 <div class="verdict-num">@Fmt.N(r.IrregularActivities)</div>
                 <p class="verdict-text">
                     atividades feitas por quem não está na lista de autorizados.
-                    Isso é @Fmt.Pct(r.IrregularShare) do volume das cooperativas monitoradas, distribuído entre
+                    Isso é @Fmt.Pct(r.IrregularShare) do volume da coop @AuditScope.Coop, distribuído entre
                     @Fmt.N(r.IrregularUsers) @(r.IrregularUsers == 1 ? "usuário" : "usuários").
                 </p>
                 <button class="verdict-link" @onclick='() => { tab = "irreg"; page = 0; }'>Ver as ocorrências na tabela</button>
@@ -41,7 +41,7 @@
             {
                 <div class="verdict-num ok">0</div>
                 <p class="verdict-text">
-                    atividades fora da lista. Todo o volume das cooperativas monitoradas foi feito por usuários autorizados.
+                    atividades fora da lista. Todo o volume da coop @AuditScope.Coop foi feito por usuários autorizados.
                 </p>
             }
         </div>
@@ -71,6 +71,8 @@
 
 @* ---------- Filtros ---------- *@
 <section class="filters">
+    @if (dir.Coops.Count > 1)
+    {
     <div class="filter">
         <div class="field-label">Cooperativa</div>
         <div class="chips">
@@ -85,6 +87,7 @@
             }
         </div>
     </div>
+    }
     <div class="filter">
         <div class="field-label">Atividade pertence à coop pela</div>
         <div class="segmented sm">
@@ -119,7 +122,7 @@
     </div>
     <div class="stat">
         <div class="stat-v">@Fmt.N(r.MonitoredActivities)</div>
-        <div class="stat-l">atividades nas cooperativas monitoradas (@Fmt.Pct(r.MonitoredActivities, r.FileRows) do arquivo)</div>
+        <div class="stat-l">atividades na coop @AuditScope.Coop (@Fmt.Pct(r.MonitoredActivities, r.FileRows) do arquivo)</div>
     </div>
     <div class="stat">
         <div class="stat-v @(r.IrregularUsers > 0 ? "bad" : "")">@Fmt.N(r.IrregularUsers)</div>
@@ -133,8 +136,11 @@
 
 @* ---------- Cooperativas ---------- *@
 <section class="section-head">
-    <h2>Por cooperativa</h2>
-    <span class="muted">Clique em uma cooperativa para filtrar o painel</span>
+    <h2>@(dir.Coops.Count > 1 ? "Por cooperativa" : "Detalhe da cooperativa")</h2>
+    @if (dir.Coops.Count > 1)
+    {
+        <span class="muted">Clique em uma cooperativa para filtrar o painel</span>
+    }
 </section>
 <section class="coop-grid">
     @foreach (var c in r.Coops)

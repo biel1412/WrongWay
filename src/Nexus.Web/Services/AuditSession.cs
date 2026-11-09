@@ -24,7 +24,7 @@ public sealed class AuditSession
         UserDirectory dir;
         using (var ms = await ToMemory(usersFile))
         using (var wb = XlsxWorkbook.Open(ms))
-            dir = UserDirectory.Parse(wb);
+            dir = UserDirectory.Parse(wb, AuditScope.Coop);
 
         var ds = ActivityLoader.CreateDataset(dir.MonitoredCoops);
         var dedupe = activityFiles.Count > 1 ? new HashSet<ulong>() : null;

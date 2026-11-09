@@ -2,7 +2,7 @@
 
 ![Nexus](src/Nexus.Web/wwwroot/img/nexus-logo.png)
 
-Inspeção de acesso por cooperativa.
+Inspeção de acesso da cooperativa **3069**.
 
 Aplicação web em **C# (Blazor WebAssembly / .NET 10)** que cruza a planilha de atividades (diária ou mensal)
 com a planilha de usuários e mostra, num dashboard, se **usuários não autorizados estão atuando** no volume das
@@ -30,31 +30,24 @@ A cada alteração enviada para a branch `main`, o site é atualizado sozinho.
 1. **Planilha de atividades**: o mesmo layout do compilado (`IDPROCESSO`, `NOMEPROCESSO`, …, `USUARIO`, `ATIVIDADE`,
    `PROCEDIMENTO`, `DATAHORAINICIOATIVIDADE`, `DATAHORAFIMATIVIDADE`, `JUSTIFICATIVA`).
    Pode ser de um dia ou do mês inteiro. Também dá para selecionar vários arquivos diários de uma vez: linhas repetidas são descartadas.
-2. **Planilha de usuários**: uma aba de autorizados por cooperativa, com o código no nome:
-
-   | Aba                | Conteúdo (coluna A, um login por linha)   |
-   |--------------------|-------------------------------------------|
-   | `3069_autorizados` | únicos usuários liberados na coop 3069    |
-   | `0300_autorizados` | únicos usuários liberados na coop 300     |
-
-   Também aceita uma aba única com as colunas `COOPERATIVA | USUARIO | STATUS`.
-   Há um modelo para baixar na tela inicial (`wwwroot/modelos/usuarios_modelo.xlsx`).
+2. **Lista de autorizados**: uma aba chamada `3069_autorizados`, com um login por linha na coluna A
+   (a primeira linha pode ser o título `lista`). O modelo oficial está na tela inicial
+   (`wwwroot/modelos/usuarios_modelo.xlsx`). Abas de outras cooperativas são ignoradas.
 3. Clique em **Analisar planilhas**.
 
 ### Como a classificação funciona
 
-Modelo de **lista de autorizados**: só quem está na aba `COOP_autorizados` pode atuar naquela cooperativa.
+Só a cooperativa **3069** é verificada. Modelo de **lista de autorizados**: só quem está na aba `3069_autorizados` pode atuar nela.
 
 | Situação          | Regra                                                         |
 |-------------------|---------------------------------------------------------------|
-| ✅ Autorizado      | o usuário está na aba `COOP_autorizados` da cooperativa       |
-| ⛔ Não autorizado  | qualquer outro usuário que atuou na cooperativa → **irregular** |
+| ✅ Autorizado      | o usuário está na aba `3069_autorizados`                      |
+| ⛔ Não autorizado  | qualquer outro usuário que atuou na coop 3069 → **irregular**  |
 
-Aba de autorizados vazia = ninguém está liberado naquela cooperativa (todo o volume dela fica irregular).
+Para auditar outra cooperativa, troque o código em `src/Nexus.Web/Services/AuditScope.cs`.
 
 - **Qual coop é a da atividade?** No painel você escolhe: `INSTITUICAOORIGEM`, `INSTITUICADESTINO` ou qualquer uma das duas (padrão).
 - Maiúsculas/minúsculas, acentos e zeros à esquerda são ignorados (`0300` = `300`, `laisa.caetano` = `LAISA.CAETANO`).
-- Só as cooperativas que aparecem na planilha de usuários são auditadas.
 
 ### O que o painel mostra
 

@@ -55,7 +55,8 @@ public sealed partial class UserDirectory
         return list.Authorized.Contains(user) ? AccessStatus.Autorizado : AccessStatus.NaoAutorizado;
     }
 
-    public static UserDirectory Parse(XlsxWorkbook wb)
+    /// <param name="onlyCoop">Se informado, só essa cooperativa é auditada; listas de outras coops são ignoradas.</param>
+    public static UserDirectory Parse(XlsxWorkbook wb, string? onlyCoop = null)
     {
         var dir = new UserDirectory();
         var recognized = 0;
@@ -78,8 +79,22 @@ public sealed partial class UserDirectory
 
         if (recognized == 0)
             throw new InvalidDataException(
-                "Não encontrei listas de usuários. Nomeie as abas como \"3069_autorizados\", \"0300_autorizados\"... " +
+                "Não encontrei a lista de autorizados. Nomeie a aba como \"3069_autorizados\" " +
                 "ou use uma aba com as colunas COOPERATIVA, USUARIO e STATUS.");
+
+        if (onlyCoop is { } only)
+        {
+            var key = Text.NormCoop(only);
+            var ignored = dir.Coops.Keys.Where(k => k != key).OrderBy(k => k).ToList();
+            foreach (var k in ignored)
+            {
+                dir.Warnings.Add($"Lista da coop {dir.Coops[k].Label} ignorada: apenas a coop {only} é verificada.");
+                dir.Coops.Remove(k);
+            }
+            if (!dir.Coops.ContainsKey(key))
+                throw new InvalidDataException(
+                    $"A planilha não tem a aba \"{only}_autorizados\". Crie essa aba com um login por linha na coluna A.");
+        }
 
         foreach (var c in dir.Coops.Values)
         {
